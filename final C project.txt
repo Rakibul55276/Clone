@@ -1,0 +1,475 @@
+//Header files
+#include<windows.h>
+#pragma warning(disable:4996)
+#include<stdio.h>
+#include<stdlib.h>
+#include<string.h>
+#include<time.h>
+#include<conio.h>
+#include<ctype.h>
+
+//function prototype declaration
+void add_book();
+void display_books();
+void borrow_book();
+void return_book();
+void summary();
+void receipt();     //display receipt
+void mainmenu();
+void Terminate();   // exit program
+
+
+
+//Structure Type Declaration
+struct data
+{
+    // variables for structure
+
+    char book_Name[20];
+    char author_Name[20];
+    int level;
+    int shelf_No;
+    int ID;
+    int Number_Books;
+    char book_cat[10];
+    char customerID[10];
+    char customerID_original[10];
+    char customer_Name[20];
+};   //Structure Tag
+struct data info;
+
+FILE *fptr;
+FILE *file;
+FILE *fp;
+
+int a;
+int g,gr,rd,rdr;
+
+
+void add_book()
+{
+	int choice;
+
+    add:
+    system("CLS");
+    printf("\t\t     Welcome To Unimas Library\n");
+    printf("\t\t----------------------------------\n");
+    printf("\t\t----------------------------------\n\n");
+    printf("\t\tInput The Details Below to Add a Book.....\n\n");
+    printf("Book Name: ");
+    scanf("%s",info.book_Name);
+    printf("\nAuthor Name: ");
+    scanf("%s",info.author_Name);
+     printf("\nNumber of Books:");
+    scanf("%d",&info.Number_Books);
+    printf("\nLevel No: ");
+    scanf("%d",&info.level);
+    printf("\nShelf No: ");
+    scanf("%d",&info.shelf_No);
+
+
+
+    file = fopen("BOOK.txt", "a+");
+
+    fprintf(file,"%5s\t",info.book_Name);
+    fprintf(file,"%5s\t\t\t",info.author_Name);
+    fprintf(file,"%5d\t\t",info.Number_Books);
+    fprintf(file,"%5d\t\t",info.level);
+    fprintf(file,"%5d\t",info.shelf_No);
+    fprintf(file,"\n");
+
+    fclose(file);
+
+
+printf("Do you want to add more books?\n\t\t1.Yes\n\t\t2.No");
+
+re:
+       printf("\nInput Choice: ");
+scanf("%d",&choice);
+if(choice==1)
+ {
+     goto add;
+ }
+else if(choice==2)
+{
+    mainmenu();
+}
+else
+ {
+     printf("Invalid Choice.....Re-Input Please\n");
+     goto re;
+ }
+
+}
+
+
+void display_books()
+{
+char input[10000];
+system("cls");
+
+
+    printf("\t\t     Welcome To Unimas Library\n");
+    printf("\t\t----------------------------------\n");
+    printf("\t\t----------------------------------\n\n");
+printf("      Name           Author              Number         Level          Shelf\n");
+printf("----------------------------------------------------------------------------- \n");
+
+file = fopen("BOOK.txt", "r");
+      while(fgets(input,10000,file))
+     {
+        printf("     %s",input);
+     }
+
+system("PAUSE");
+
+mainmenu();
+
+
+}
+
+
+
+void borrow_book()
+{
+
+//    char customerID[10];
+    int b,c;
+    char ext[5]=".txt";
+	int i,cat;
+
+    system("CLS");
+    printf("\t\t     Welcome To Unimas Library\n");
+    printf("\t\t----------------------------------\n");
+    printf("\t\t----------------------------------\n\n");
+    printf("\t\tInput The Details Below to Borrow Book.....\n\n");
+
+    printf("Customer ID: ");
+    scanf("%d",&info.ID);
+    c=info.ID;
+    printf("\nCustomer Name: ");
+    scanf("%s",info.customer_Name);
+
+itoa(c,info.customerID,10);
+
+strcpy(info.customerID_original,info.customerID);
+
+strcat(info.customerID,ext);
+
+ file= fopen("Borrowed.txt","a+");
+ fprintf(file,"Customer ID: %s\n",info.customerID_original);
+ fprintf(file,"Customer Name: %s\n",info.customer_Name);
+ fprintf(file,"Name of Books:\n");
+
+fp=fopen(info.customerID,"w+");
+fprintf(fp,"Customer ID: %s\n",info.customerID_original);
+fprintf(fp,"Customer Name: %s\n",info.customer_Name);
+fprintf(fp,"Name of Books:\n");
+
+    num:
+    printf("\nHow many Books Do you want to Borrow?:");
+    scanf("%d",&b);
+    if(b>5)
+    {
+        printf("\nYou can't borrow more than 5 books\n");
+        goto num;
+    }
+    
+    for(i=0;i<b;i++)
+    {
+        printf("\nName of Book %d : ",i+1);
+        scanf("%s",info.book_Name);
+        cat:
+        printf("\nSelect Category: 1.General 2.RED-SPOT\n");
+        printf("Answer: ");
+        scanf("%d",&cat);
+        if(cat==1)
+        {
+            strcpy(info.book_cat,"General");
+
+
+
+            file=fopen("generalloan.txt","r");
+            fscanf(file,"%d",&g);
+            g++;
+            fclose(file);
+
+            file=fopen("generalloan.txt","w");
+            fprintf(file,"%d",g);
+            fclose(file);
+        }
+        else if(cat==2)
+        {
+             strcpy(info.book_cat,"RED-SPOT");
+
+             file=fopen("redspot.txt","r");
+            fscanf(file,"%d",&rd);
+            rd++;
+            fclose(file);
+
+            file=fopen("redspot.txt","w");
+            fprintf(file,"%d",rd);
+            fclose(file);
+
+
+        }
+        else{
+            printf("\nInvalid choice....Re-choice please.\n");
+            goto cat;
+        }
+
+        fprintf(file,"%d %s\t%s\n",i+1,info.book_Name,info.book_cat);
+        fprintf(fp,"%d %s\t%s\n",i+1,info.book_Name,info.book_cat);
+    }
+fclose(file);
+fclose(fp);
+
+system("PAUSE");
+
+mainmenu();
+
+
+}
+void return_book()
+{
+
+
+    int id;
+    char word[5];
+    char ext[5]=".txt";
+	int j,type,day,hour;
+double total=0;
+double due;
+//double due1=0;
+char in[10000];
+char input[10000];
+int e;
+system("CLS");
+
+    printf("\t\t     Welcome To Unimas Library\n");
+    printf("\t\t----------------------------------\n");
+    printf("\t\t----------------------------------\n\n");
+    printf("\t\tInput The Details Below to Borrow Book.....\n\n");
+    printf("\n\nIf no due please press 00 to skip:\n\n\n");
+
+ valid:
+
+    printf("Customer ID: ");
+    scanf("%d",&id);
+    itoa(id,word,10);
+    strcat(word,ext);
+
+fptr= fopen(word,"r");
+if(!fptr)
+{
+    printf("Invalid Customer ID.......\n");
+    goto valid;
+}
+else{
+      while(fgets(input,10000,fptr))
+     {
+        printf("%s",input);
+     }
+fclose(fptr);
+printf("\n\n Total Book to Return: ");
+scanf("%d",&e);
+
+for(j=0;j<e;j++)
+{   type:
+    printf("\nType of Book %d: 1. General 2.RED-SPOT\n",j+1);
+    printf("Answer: ");
+    scanf("%d",&type);
+    if(type==1)
+    {
+            file=fopen("generalloan_return.txt","r");
+            fscanf(file,"%d",&gr);
+            gr++;
+            fclose(file);
+
+            file=fopen("generalloan_return.txt","w");
+            fprintf(file,"%d",gr);
+            fclose(file);
+
+
+    printf("\nOverdue for Book %d (in day): ",j+1);
+    scanf("%d",&day);
+    due = 0.20*day;
+    }
+   if(type==2)
+    {
+        file=fopen("redspot_return.txt","r");
+            fscanf(file,"%d",&rdr);
+            rdr++;
+            fclose(file);
+
+            file=fopen("redspot_return.txt","w");
+            fprintf(file,"%d",rdr);
+            fclose(file);
+
+
+
+    printf("\nOverdue for Book %d (in hour): ",j+1);
+    scanf("%d",&hour);
+    due = 0.20*hour;
+    }
+    if(type!=1 && type!=2){
+        printf("\nInput Correct Book Type.....");
+        goto type;
+    }
+total += due;
+}
+
+system("cls");
+ printf("\t\t     Welcome To Unimas Library\n");
+    printf("\t\t----------------------------------\n");
+    printf("\t\t----------------------------------\n\n");
+    printf("\t\tInput The Details Below to Borrow Book.....\n\n");
+
+
+fptr= fopen(word,"r");
+      while(fgets(in,10000,fptr))
+     {
+        printf("%s",in);
+     }
+fclose(fptr);
+
+printf("\nYour total Due is: %.2lf RM\n",total);
+
+system("PAUSE");
+
+mainmenu();
+
+
+}
+
+}
+void summary()
+{
+  
+
+
+    int h;
+   time_t t;
+   time(&t);
+     system("cls");
+   
+    file=fopen("generalloan.txt","r");
+    fscanf(file,"%d",&g);
+    fclose(file);
+    file=fopen("generalloan_return.txt","r");
+    fscanf(file,"%d",&gr);
+    fclose(file);
+    file=fopen("redspot.txt","r");
+    fscanf(file,"%d",&rd);
+    fclose(file);
+    file=fopen("redspot_return.txt","r");
+    fscanf(file,"%d",&rdr);
+    fclose(file);
+
+
+    printf("\t\t     Welcome To Unimas Library\n");
+    printf("\t\t----------------------------------\n");
+    printf("\t\t            Summary Report\n");
+    printf("\t\t----------------------------------\n\n");
+    printf("Date: %s\n",ctime(&t));
+    printf("--------------------------------------------------------------------\n");
+    printf("No   Library Items      Total Loan     Total Return     Lost(if any)\n");
+    printf("--------------------------------------------------------------------\n");
+    printf("1     General              %d                %d               %d    \n",g,gr,(g-gr));
+    printf("1     Red Spot             %d                %d               %d    \n",rd,rdr,(rd-rdr));
+    printf("--------------------------------------------------------------------\n");
+     h=(g-gr)+(rd-rdr);
+    printf("Total:                     %d                %d               %d    \n",(g+rd),(gr+rdr),h);
+
+    if(h>0)
+    {
+        printf("\nLost Penalty: %d \n",h*50);
+
+        printf("Total Payment: %d \n",h*50);
+    }
+
+
+
+system("PAUSE");
+
+mainmenu();
+
+
+}
+void Terminate()
+{
+    system("cls");  //print new screen
+
+    printf("\n\n\t\t\tThank You For Using Our System.\n\n");
+    printf("\n\t\t\t\t Have a Nice Day!\n\n\n");
+    printf("\t\t\t..........Welcome Again.............\n\n");
+    exit(0);  //Program Exit here
+}
+void mainmenu()
+{
+    int i;
+    char *menu2[] = {"Add Book","Diplay Books","Borrow Book","Return Book","Weekly Summary","Exit"};
+    system("cls");
+    printf("\t\t     Welcome To Unimas Library\n");
+    printf("\t\t----------------------------------\n");
+    printf("\t\t----------------------------------\n\n");
+    printf("\t\t----------------------------------\n");
+    printf("\t\t----------------------------------\n\t");
+    printf("\t\t   Main Menu: \n");
+    printf("\t\t\t   ----------\n\t");
+
+  do{
+         for(i=0;i<6;i++)
+	{
+		printf("\t\t  %d. %s\t\n\t",i+1,menu2[i]); //display menu
+	}
+    printf("Choose Option: ");
+    scanf("%d",&i);
+    if(i==1)
+    {
+    add_book();
+    break;
+    }
+    else if(i==2)
+    {
+        display_books();
+               break;
+    }
+
+    else if(i==3)
+    {
+        borrow_book();
+               break;
+    }
+    else if(i==4)
+    {
+   return_book();
+    break;
+    }
+    else if(i==5)
+    {
+   summary();
+    break;
+    }
+
+    else if(i==6)
+    {
+   Terminate();
+    break;
+    }
+    else
+    {
+        printf("Invalid Choice...........\n\t");
+    }
+}while(i!=6);
+
+
+}
+
+int main()
+
+{
+system("COLOR F4");
+mainmenu();
+
+}
